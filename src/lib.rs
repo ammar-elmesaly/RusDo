@@ -1,71 +1,50 @@
 mod ui;
+mod menu;
 
 use std::io;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ui::draw_menu;
+use menu::MenuAction;
 
-struct Item {
-    content: &'static str,
-    index: usize
-}
+pub use menu::Menu;
 
-impl Item {
-    fn new(content: &'static str) -> Item {
-        Item {
-            content,
-            index: 0
-        }
-    }
-}
-pub struct Menu {
-    items: Vec<Item>,
-    selected: usize
-}
+use crate::ui::draw_view;
 
-impl Menu {
-    pub fn init() -> Menu {
-        Menu {
-            items: vec![Item::new("View Tasks"), Item::new("Add Task"), Item::new("Remove Task"), Item::new("Exit")],
-            selected: 0
-        }
-    }
-}
 
-fn handle_events(menu: &mut Menu) -> std::io::Result<bool> {
+fn handle_events(menu: &mut Menu) -> std::io::Result<&str> {
     match event::read()? {
         Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
             KeyCode::Up => {
-                if menu.selected > 0 {
-                    menu.selected -= 1;
-                }
+                menu.move_prev();
             }
             KeyCode::Down => {
-                if menu.selected < menu.items.len() - 1 {
-                    menu.selected += 1;
-                }
+                menu.move_next();
             }
             KeyCode::Enter => {
-                if menu.selected == 3 {
-                    return Ok(true);
+                match menu.current_action() {
+                    MenuAction::ViewTasks => { return Ok("view");}
+                    MenuAction::Exit => { return Ok("exit") }
+                    _ => {}
                 }
             }
-            KeyCode::Char('q') => return Ok(true),
+            KeyCode::Char('q') => return Ok("exit"),
             // handle other key events
             _ => {}
         },
         // handle other events
         _ => {}
     }
-    Ok(false)
+    Ok("")
 }
 
 pub fn run(terminal: &mut ratatui::DefaultTerminal, mut menu: Menu) -> std::io::Result<()> {
     loop {
-        terminal.draw(|frame| draw_menu(frame, &menu))?;
-        if handle_events(&mut menu)? {
-            break Ok(());
-        }
+        match handle_events(&mut menu) {
+            Ok("exit") => { break Ok(()) }
+            Ok("view") => { terminal.draw(|frame| draw_view(frame, &menu))?;}
+            _ => { terminal.draw(|frame| draw_menu(frame, &menu))?; }
+        };
     }
 }
 

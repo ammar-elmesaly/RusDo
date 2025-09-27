@@ -1,5 +1,5 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Layout, Rect, Direction}, style::{Color, Style, Stylize}, text::Line, widgets::{Block, List, ListItem, ListState, Padding}, Frame
+    layout::{Alignment, Constraint, Direction, Layout, Rect}, style::{Color, Style, Stylize}, text::Line, widgets::{Block, List, ListItem, ListState, Padding, Paragraph}, Frame
 };
 use super::Menu;
 
@@ -20,6 +20,12 @@ pub fn draw_menu(frame: &mut Frame, menu: &Menu) {
     state.select(Some(menu.selected));
 
     frame.render_stateful_widget(list, area, &mut state);
+}
+
+pub fn draw_view(frame: &mut Frame, menu: &Menu) {
+    let area = centered_rect(60, 100, frame.area());
+    let p = Paragraph::new("Task 1!").black().on_blue();
+    frame.render_widget(p, area);
 }
 
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
