@@ -3,10 +3,7 @@ use rusdo::{run, Menu};
 use ratatui;
 
 fn main() {
-    let menu = Menu {
-        items: vec!["Orange", "Kebab", "Right"],
-        selected: 0
-    };
+    let menu = Menu::init();
 
     let mut terminal = ratatui::init();
     

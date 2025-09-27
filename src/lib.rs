@@ -1,34 +1,35 @@
+mod ui;
+
 use std::io;
-
-use ratatui::{
-    layout::{Alignment, Constraint, Layout}, style::{Color, Modifier, Style, Stylize}, symbols::block, text::{Line, Span, Text}, widgets::{Block, List, ListItem, ListState, Padding, Paragraph}, Frame
-};
-
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
-pub struct Menu {
-    pub items: Vec<&'static str>,
-    pub selected: usize
+use ui::draw_menu;
+
+struct Item {
+    content: &'static str,
+    index: usize
 }
 
-fn draw(frame: &mut Frame, menu: &Menu) {
-    let canvas = Layout::vertical([Constraint::Min(1)]).split(frame.area());
-    let items: Vec<ListItem> = menu.items.iter().map(|item | ListItem::new(*item)).collect();
+impl Item {
+    fn new(content: &'static str) -> Item {
+        Item {
+            content,
+            index: 0
+        }
+    }
+}
+pub struct Menu {
+    items: Vec<Item>,
+    selected: usize
+}
 
-    let block_style = Block::bordered()
-    .title("Choose an item")
-    .title_alignment(Alignment::Center)
-    .padding(Padding::symmetric(2, 1));
-
-    let list: List = List::new(items).block(block_style)
-    .light_blue()
-    .highlight_style(Style::default().bg(Color::Magenta).fg(Color::White))
-    .highlight_symbol(">> ");
-
-    let mut state = ListState::default();
-    state.select(Some(menu.selected));
-
-    frame.render_stateful_widget(list, canvas[0], &mut state);
+impl Menu {
+    pub fn init() -> Menu {
+        Menu {
+            items: vec![Item::new("View Tasks"), Item::new("Add Task"), Item::new("Remove Task"), Item::new("Exit")],
+            selected: 0
+        }
+    }
 }
 
 fn handle_events(menu: &mut Menu) -> std::io::Result<bool> {
@@ -45,7 +46,9 @@ fn handle_events(menu: &mut Menu) -> std::io::Result<bool> {
                 }
             }
             KeyCode::Enter => {
-            
+                if menu.selected == 3 {
+                    return Ok(true);
+                }
             }
             KeyCode::Char('q') => return Ok(true),
             // handle other key events
@@ -59,7 +62,7 @@ fn handle_events(menu: &mut Menu) -> std::io::Result<bool> {
 
 pub fn run(terminal: &mut ratatui::DefaultTerminal, mut menu: Menu) -> std::io::Result<()> {
     loop {
-        terminal.draw(|frame| draw(frame, &menu))?;
+        terminal.draw(|frame| draw_menu(frame, &menu))?;
         if handle_events(&mut menu)? {
             break Ok(());
         }
