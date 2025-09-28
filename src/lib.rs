@@ -1,18 +1,20 @@
 mod ui;
 mod menu;
+mod view_tasks;
+mod task;
+mod db;
 
+use std::error::Error;
 use std::io;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ui::draw_menu;
 use menu::MenuAction;
+use menu::Menu;
 
-pub use menu::Menu;
+use crate::task::Task;
 
-use crate::ui::draw_view;
-
-
-fn handle_events(menu: &mut Menu) -> std::io::Result<&str> {
+fn handle_events(menu: &mut Menu) -> std::io::Result<MenuAction> {
     match event::read()? {
         Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
             KeyCode::Up => {
@@ -23,27 +25,46 @@ fn handle_events(menu: &mut Menu) -> std::io::Result<&str> {
             }
             KeyCode::Enter => {
                 match menu.current_action() {
-                    MenuAction::ViewTasks => { return Ok("view");}
-                    MenuAction::Exit => { return Ok("exit") }
+                    MenuAction::ViewTasks => return Ok(MenuAction::ViewTasks),
+                    MenuAction::Exit => return Ok(MenuAction::Exit),
                     _ => {}
                 }
             }
-            KeyCode::Char('q') => return Ok("exit"),
+            KeyCode::Char('q') => return Ok(MenuAction::Exit),
             // handle other key events
             _ => {}
         },
         // handle other events
         _ => {}
     }
-    Ok("")
+    Ok(MenuAction::None)
 }
 
-pub fn run(terminal: &mut ratatui::DefaultTerminal, mut menu: Menu) -> std::io::Result<()> {
+pub fn run(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn Error>> {
+    let conn = db::init_db()?;
+    Task::create_table(&conn)?;
+    Task::insert(&conn, &Task {
+        id: 0,
+        title: String::from("Hello World"),
+        completed: false,
+        desc: String::from("value")
+    })?;
+    Task::insert(&conn, &Task {
+        id: 0,
+        title: String::from("Hello Mars"),
+        completed: true,
+        desc: String::from("new desc")
+    })?;
+
+    let mut menu = Menu::init();
+    
     loop {
+        terminal.draw(|frame| draw_menu(frame, &menu))?;
+
         match handle_events(&mut menu) {
-            Ok("exit") => { break Ok(()) }
-            Ok("view") => { terminal.draw(|frame| draw_view(frame, &menu))?;}
-            _ => { terminal.draw(|frame| draw_menu(frame, &menu))?; }
+            Ok(MenuAction::Exit) => { break Ok(()) }
+            Ok(MenuAction::ViewTasks) => { view_tasks::run_loop(terminal)?; }
+            _ => { }
         };
     }
 }

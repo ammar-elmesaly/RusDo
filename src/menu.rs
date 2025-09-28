@@ -1,10 +1,10 @@
 #[repr(usize)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MenuAction {
     ViewTasks = 0,
     AddTask = 1,
     RemoveTask = 2,
     Exit = 3,
+    None = 4,
 }
 
 impl TryFrom<usize> for MenuAction {

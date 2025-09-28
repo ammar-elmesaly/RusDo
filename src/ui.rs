@@ -22,7 +22,7 @@ pub fn draw_menu(frame: &mut Frame, menu: &Menu) {
     frame.render_stateful_widget(list, area, &mut state);
 }
 
-pub fn draw_view(frame: &mut Frame, menu: &Menu) {
+pub fn draw_view(frame: &mut Frame) {
     let area = centered_rect(60, 100, frame.area());
     let p = Paragraph::new("Task 1!").black().on_blue();
     frame.render_widget(p, area);
