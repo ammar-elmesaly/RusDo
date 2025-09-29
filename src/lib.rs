@@ -5,7 +5,6 @@ mod task;
 mod db;
 
 use std::error::Error;
-use std::io;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
 use ui::draw_menu;
@@ -30,7 +29,7 @@ fn handle_events(menu: &mut Menu) -> std::io::Result<MenuAction> {
                     _ => {}
                 }
             }
-            KeyCode::Char('q') => return Ok(MenuAction::Exit),
+            KeyCode::Char('q') | KeyCode::Esc => return Ok(MenuAction::Exit),
             // handle other key events
             _ => {}
         },
@@ -42,28 +41,19 @@ fn handle_events(menu: &mut Menu) -> std::io::Result<MenuAction> {
 
 pub fn run(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn Error>> {
     let conn = db::init_db()?;
-    Task::create_table(&conn)?;
-    Task::insert(&conn, &Task {
-        id: 0,
-        title: String::from("Hello World"),
-        completed: false,
-        desc: String::from("value")
-    })?;
-    Task::insert(&conn, &Task {
-        id: 0,
-        title: String::from("Hello Mars"),
-        completed: true,
-        desc: String::from("new desc")
-    })?;
+
+    if let Ok(false) = Task::table_exists(&conn) {
+        Task::create_table(&conn)?;
+    }
 
     let mut menu = Menu::init();
-    
+
     loop {
         terminal.draw(|frame| draw_menu(frame, &menu))?;
 
         match handle_events(&mut menu) {
             Ok(MenuAction::Exit) => { break Ok(()) }
-            Ok(MenuAction::ViewTasks) => { view_tasks::run_loop(terminal)?; }
+            Ok(MenuAction::ViewTasks) => { view_tasks::run_loop(terminal, &conn)?; }
             _ => { }
         };
     }

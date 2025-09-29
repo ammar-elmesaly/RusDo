@@ -1,11 +1,12 @@
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use rusqlite::Connection;
 
-use crate::ui::draw_view;
+use crate::{task::Task, ui::draw_view};
 
 fn handle_events() -> std::io::Result<bool> {
     match event::read()? {
         Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
-            KeyCode::Char('q') => return Ok(true),
+            KeyCode::Char('q') | KeyCode::Esc => return Ok(true),
             _ => {}
         }
 
@@ -14,9 +15,10 @@ fn handle_events() -> std::io::Result<bool> {
     Ok(false)
 }
 
-pub fn run_loop(terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()>  {
+pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> std::io::Result<()>  {
     loop {
-        terminal.draw(|frame| draw_view(frame))?;
+        let tasks = Task::all(conn).unwrap();
+        terminal.draw(|frame| draw_view(frame, tasks))?;
         if handle_events()? {
             return Ok(());
         }

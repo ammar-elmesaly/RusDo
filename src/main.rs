@@ -1,6 +1,5 @@
 use std::process;
 use ratatui;
-use rusqlite::{params, Connection, Result};
 use rusdo::run;
 
 fn main() {

@@ -9,6 +9,11 @@ pub struct Task {
 }
 
 impl Task {
+
+    pub fn table_exists(conn: &Connection) -> Result<bool> {
+        conn.table_exists(None, "task")
+    }
+
     pub fn create_table(conn: &Connection) -> Result<()> {
         conn.execute(
             "CREATE TABLE task (
