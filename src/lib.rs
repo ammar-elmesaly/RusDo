@@ -51,6 +51,7 @@ pub fn run(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn Error>
     loop {
         terminal.draw(|frame| draw_menu(frame, &menu))?;
 
+        // For each action, we run a sub-run function, when that sub-run function returns, it returns here.
         match handle_events(&mut menu) {
             Ok(MenuAction::Exit) => { break Ok(()) }
             Ok(MenuAction::ViewTasks) => { view_tasks::run_loop(terminal, &conn)?; }

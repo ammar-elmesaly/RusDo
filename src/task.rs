@@ -1,10 +1,11 @@
-use rusqlite::{params, Connection, Result};
+use rusqlite::{Connection, Result};
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Task {
     pub id: u64,
     pub title: String,
-    pub desc: String,
+    pub desc: Option<String>,
     pub completed: bool
 }
 
@@ -37,7 +38,7 @@ impl Task {
         Ok(())
     }
 
-    pub fn all(conn: &Connection) -> Result<Vec<Task>> {
+    pub fn all(conn: &Connection) -> Result<TaskList> {
         let mut stmt = conn.prepare("SELECT id, title, desc, completed FROM task")?;
         let iter = stmt.query_map([], |row| {
             Ok(Task {
@@ -52,6 +53,32 @@ impl Task {
         for t in iter {
             tasks.push(t?);
         }
-        Ok(tasks)
+        Ok(TaskList { tasks, selected: 0 })
+    }
+}
+
+pub struct TaskList {
+    pub tasks: Vec<Task>,
+    pub selected: usize
+}
+
+impl TaskList {
+    pub fn move_next(&mut self) {
+        self.selected = (self.selected + 1) % self.tasks.len();
+    }
+
+    pub fn move_prev(&mut self) {
+        if self.selected == 0 {
+            self.selected = self.tasks.len() - 1;
+        } else {
+            self.selected -= 1;
+        }
+    }
+
+    pub fn check_current_task(&mut self, conn: &Connection) -> Result<()> {
+        let current_task = &mut self.tasks[self.selected];
+        current_task.completed = !current_task.completed;
+        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [current_task.completed as u64, current_task.id])?;
+        Ok(())
     }
 }

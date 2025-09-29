@@ -2,7 +2,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect}, style::{Color, Style, Stylize}, text::{Line, Span}, widgets::{Block, List, ListItem, ListState, Padding}, Frame
 };
 use super::Menu;
-use crate::task::Task;
+use crate::task::{Task, TaskList};
 
 pub fn draw_menu(frame: &mut Frame, menu: &Menu) {
     let area = centered_rect(60, 100, frame.area());
@@ -23,10 +23,10 @@ pub fn draw_menu(frame: &mut Frame, menu: &Menu) {
     frame.render_stateful_widget(list, area, &mut state);
 }
 
-pub fn draw_view(frame: &mut Frame, tasks: Vec<Task>) {
+pub fn draw_view(frame: &mut Frame, task_list: &TaskList) {
     let area = centered_rect(60, 100, frame.area());
     
-    let items: Vec<ListItem> = tasks.iter().enumerate().map(|(index, task) | {
+    let items: Vec<ListItem> = task_list.tasks.iter().enumerate().map(|(index, task) | {
         let span;
 
         if task.completed {
@@ -44,9 +44,13 @@ pub fn draw_view(frame: &mut Frame, tasks: Vec<Task>) {
 
     let list: List = List::new(items).block(block_style)
     .light_blue()
-    .scroll_padding(1);
+    .highlight_symbol(">> ")
+    .highlight_style(Style::default().bg(Color::LightBlue).fg(Color::White));
+    
+    let mut state = ListState::default();
+    state.select(Some(task_list.selected));
 
-    frame.render_widget(list, area);
+    frame.render_stateful_widget(list, area, &mut state);
 }
 
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {

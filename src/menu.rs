@@ -1,5 +1,5 @@
 #[repr(usize)]
-pub enum MenuAction {
+pub enum MenuAction {  
     ViewTasks = 0,
     AddTask = 1,
     RemoveTask = 2,
@@ -7,7 +7,7 @@ pub enum MenuAction {
     None = 4,
 }
 
-impl TryFrom<usize> for MenuAction {
+impl TryFrom<usize> for MenuAction {  // Map Menu selected (usize) to a Menu::Action
 
     type Error = ();
 
@@ -62,7 +62,7 @@ impl Menu {
         }
     }
 
-    pub fn current_action(&self) -> MenuAction {
+    pub fn current_action(&self) -> MenuAction {  // Current selected action (view tasks, add, .. etc)
         MenuAction::try_from(self.selected).unwrap()
     }
 }
