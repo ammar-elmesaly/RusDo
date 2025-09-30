@@ -44,15 +44,16 @@ pub fn run(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn Error>
     }
 
     let mut menu = Menu::init();
+    let mut show_message = false;
 
     loop {
-        terminal.draw(|frame| draw_menu(frame, &menu))?;
+        terminal.draw(|frame| draw_menu(frame, &menu, show_message))?;
 
         // For each action, we run a sub-run function, when that sub-run function returns, it returns here.
         match handle_events(&mut menu)? {
             MenuAction::Exit => break Ok(()),
-            MenuAction::ViewTasks => view_tasks::run_loop(terminal, &conn)?,
-            MenuAction::About => about::run_loop(terminal)?,
+            MenuAction::ViewTasks => show_message = view_tasks::run_loop(terminal, &conn)?,
+            MenuAction::About => { about::run_loop(terminal)?; show_message = false },
             _ => { }
         };
     }

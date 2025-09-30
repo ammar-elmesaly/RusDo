@@ -77,14 +77,21 @@ fn handle_delete_task_events(confirm_selection: &mut usize) -> Result<Action, Bo
     Ok(Action::Stay)
 }
 
-pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> Result<(), Box<dyn Error>>  {
+// It returns a Result bool, which is a show message bool, if we want it to return multiple states,
+// then it's probably more suitable to use an enum
+pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> Result<bool, Box<dyn Error>>  {
     let mut task_list = Task::all(conn, 0)?;
+    
+    if task_list.tasks.len() == 0 {
+        return Ok(true);
+    }
+
     loop {
         terminal.draw(|frame| draw_view(frame, &task_list))?;
         match handle_events()? {
             Action::MoveNext => task_list.move_next(),
             Action::MovePrev => task_list.move_prev(),
-            Action::Exit => return Ok(()),
+            Action::Exit => return Ok(false),
             Action::ViewTask => {
                 let task = task_list.current_task();
                 match view_task_loop(terminal, task)? {
@@ -102,6 +109,9 @@ pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> R
                 };
                 
                 if task_list.selected == task_list.tasks.len() {
+                    if task_list.tasks.len() == 0 {  // All tasks were deleted
+                        return Ok(true);  // Show message
+                    }
                     task_list.selected -= 1;
                 }
             },
@@ -112,7 +122,7 @@ pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> R
 
 pub fn view_task_loop(terminal: &mut ratatui::DefaultTerminal, task: &Task) -> Result<Action, Box<dyn Error>>  {
     let mut confirm_selection = 0;
-    loop {
+    loop{
         terminal.draw(|frame| draw_view_task(frame, &task, confirm_selection))?;
         let result = handle_view_task_events(&mut confirm_selection);
         let Ok(Action::Stay) = result else {

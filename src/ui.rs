@@ -4,14 +4,29 @@ use ratatui::{
 use super::Menu;
 use crate::task::{Task, TaskList};
 
-pub fn draw_menu(frame: &mut Frame, menu: &Menu) {
-    let area = centered_rect(60, 100, frame.area());
-    let items: Vec<ListItem> = menu.items.iter().map(|item | ListItem::new(Line::from(item.content).alignment(Alignment::Center))).collect();
+pub fn draw_menu(frame: &mut Frame, menu: &Menu, show_message: bool) {
 
-    let block_style = Block::bordered()
-    .title("Welcome to RusDo!")
-    .title_alignment(Alignment::Center)
-    .padding(Padding::symmetric(2, 1));
+    let outer_area = centered_rect(60, 100, frame.area());
+
+    let outer_block = Block::bordered()
+        .title("Welcome to RusDo!")
+        .title_alignment(Alignment::Center)
+        .light_magenta();
+
+    // Renders large border with a title
+    frame.render_widget(outer_block, outer_area);
+
+    let area = Layout::vertical([
+        Constraint::Percentage(80),
+        Constraint::Percentage(20)
+    ])
+    .split(outer_area);
+
+    let items: Vec<ListItem> = menu.items.iter().map(|item | ListItem::new(Line::from(item.content).centered()))
+    .collect();
+
+    let block_style = Block::default()
+    .padding(Padding::symmetric(2, 3));
 
     let list: List = List::new(items).block(block_style)
     .magenta()
@@ -20,8 +35,21 @@ pub fn draw_menu(frame: &mut Frame, menu: &Menu) {
     let mut state = ListState::default();
     state.select(Some(menu.selected));
 
-    frame.render_stateful_widget(list, area, &mut state);
+    frame.render_stateful_widget(list, area[0], &mut state);
+
+    if !show_message { return; }
+
+    let message = Paragraph::new("There is no available tasks, consider adding some!")
+    .centered()
+    .blue()
+    .wrap(Wrap { trim: true })
+    .block(Block::bordered());
+
+    frame.render_widget(message, area[1]);
+
+
 }
+
 
 pub fn draw_view(frame: &mut Frame, task_list: &TaskList) {
     let area = centered_rect(60, 100, frame.area());
