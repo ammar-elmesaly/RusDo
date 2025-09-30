@@ -2,7 +2,7 @@
 pub enum MenuAction {  
     ViewTasks = 0,
     AddTask = 1,
-    RemoveTask = 2,
+    About = 2,
     Exit = 3,
     None = 4,
 }
@@ -15,13 +15,14 @@ impl TryFrom<usize> for MenuAction {  // Map Menu selected (usize) to a Menu::Ac
         match value {
             0 => Ok(MenuAction::ViewTasks),
             1 => Ok(MenuAction::AddTask),
-            2 => Ok(MenuAction::RemoveTask),
+            2 => Ok(MenuAction::About),
             3 => Ok(MenuAction::Exit),
             _ => Err(())
         }
     }
 }
 
+#[allow(dead_code)]
 pub struct MenuItem {
     pub content: &'static str,
     pub action: MenuAction,
@@ -43,7 +44,7 @@ impl Menu {
             items: vec![
                 MenuItem::new("View Tasks", MenuAction::ViewTasks),
                 MenuItem::new("Add Task", MenuAction::AddTask),
-                MenuItem::new("Remove Task", MenuAction::RemoveTask),
+                MenuItem::new("About", MenuAction::About),
                 MenuItem::new("Exit", MenuAction::Exit),
             ],
             selected: 0,

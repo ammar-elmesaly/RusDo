@@ -77,8 +77,19 @@ impl TaskList {
 
     pub fn check_current_task(&mut self, conn: &Connection) -> Result<()> {
         let current_task = &mut self.tasks[self.selected];
-        current_task.completed = !current_task.completed;
-        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [current_task.completed as u64, current_task.id])?;
+        current_task.completed = true;
+        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [1, current_task.id])?;
         Ok(())
+    }
+
+    pub fn uncheck_current_task(&mut self, conn: &Connection) -> Result<()> {
+        let current_task = &mut self.tasks[self.selected];
+        current_task.completed = false;
+        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [0, current_task.id])?;
+        Ok(())
+    }
+
+    pub fn current_task(&self) -> &Task {
+        &self.tasks[self.selected]
     }
 }
