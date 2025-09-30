@@ -55,7 +55,7 @@ fn handle_view_task_events(confirm_selection: &mut usize) -> Result<Action, Box<
 }
 
 pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> Result<(), Box<dyn Error>>  {
-    let mut task_list = Task::all(conn)?;
+    let mut task_list = Task::all(conn, 0)?;
     loop {
         terminal.draw(|frame| draw_view(frame, &task_list))?;
         match handle_events()? {
@@ -65,13 +65,13 @@ pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> R
             Action::ViewTask => {
                 let task = task_list.current_task();
                 match view_task_loop(terminal, task)? {
-                    Action::CheckTask => task_list.check_current_task(conn)?,
-                    Action::UncheckTask => task_list.uncheck_current_task(conn)?,
+                    Action::CheckTask => Task::check_current_task(conn, &mut task_list)?,
+                    Action::UncheckTask => Task::uncheck_current_task(conn, &mut task_list)?,
                     _ => {}
                 }
             }
             Action::DeleteTask => {
-                
+
             }
             _ => {}
         }

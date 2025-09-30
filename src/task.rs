@@ -29,16 +29,31 @@ impl Task {
         Ok(())
     }
 
-    pub fn insert(conn: &Connection, task: &Self) -> Result<()> {
+    pub fn insert(conn: &Connection, task: &Task, task_list: &mut TaskList) -> Result<()> {
         conn.execute(
             "INSERT INTO task (title, desc, completed) VALUES (?1, ?2, ?3)",
             (&task.title, &task.desc, &task.completed),
         )?;
+        *task_list = Task::all(conn, task_list.selected)?;
 
         Ok(())
     }
 
-    pub fn all(conn: &Connection) -> Result<TaskList> {
+    pub fn check_current_task(conn: &Connection, task_list: &mut TaskList) -> Result<()> {
+        let current_task = &task_list.tasks[task_list.selected];
+        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [1, current_task.id])?;
+        *task_list = Task::all(conn, task_list.selected)?;
+        Ok(())
+    }
+
+    pub fn uncheck_current_task(conn: &Connection, task_list: &mut TaskList) -> Result<()> {
+        let current_task = &task_list.tasks[task_list.selected];
+        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [0, current_task.id])?;
+        *task_list = Task::all(conn, task_list.selected)?;
+        Ok(())
+    }
+
+    pub fn all(conn: &Connection, old_selected: usize) -> Result<TaskList> {
         let mut stmt = conn.prepare("SELECT id, title, desc, completed FROM task")?;
         let iter = stmt.query_map([], |row| {
             Ok(Task {
@@ -53,7 +68,7 @@ impl Task {
         for t in iter {
             tasks.push(t?);
         }
-        Ok(TaskList { tasks, selected: 0 })
+        Ok(TaskList { tasks, selected: old_selected })
     }
 }
 
@@ -73,20 +88,6 @@ impl TaskList {
         } else {
             self.selected -= 1;
         }
-    }
-
-    pub fn check_current_task(&mut self, conn: &Connection) -> Result<()> {
-        let current_task = &mut self.tasks[self.selected];
-        current_task.completed = true;
-        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [1, current_task.id])?;
-        Ok(())
-    }
-
-    pub fn uncheck_current_task(&mut self, conn: &Connection) -> Result<()> {
-        let current_task = &mut self.tasks[self.selected];
-        current_task.completed = false;
-        conn.execute("UPDATE task SET completed = ?1 WHERE id = ?2;", [0, current_task.id])?;
-        Ok(())
     }
 
     pub fn current_task(&self) -> &Task {
