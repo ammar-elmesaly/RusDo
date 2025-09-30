@@ -1,5 +1,5 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect}, style::{Color, Style, Stylize}, text::{Line, Span}, widgets::{Block, List, ListItem, ListState, Padding, Paragraph, Wrap}, Frame
+    layout::{Alignment, Constraint, Direction, Flex, Layout, Rect}, style::{Color, Style, Stylize}, text::{Line, Span}, widgets::{Block, List, ListItem, ListState, Padding, Paragraph, Wrap}, Frame
 };
 use super::Menu;
 use crate::task::{Task, TaskList};
@@ -194,6 +194,50 @@ pub fn draw_delete_task(frame: &mut Frame, task: &Task, selected: usize) {
 
 }
 
+pub fn draw_about(frame: &mut Frame) {
+
+    let outer_area = centered_rect(60, 80, frame.area());
+
+    let outer_block = Block::bordered()
+        .title("About")
+        .title_alignment(Alignment::Center)
+        .light_green();
+
+    // Renders large border with a title
+    frame.render_widget(outer_block, outer_area);
+
+    let area = Layout::vertical([
+        Constraint::Percentage(16),
+        Constraint::Percentage(50),
+        Constraint::Percentage(16),
+        Constraint::Percentage(16)
+    ]).split(outer_area);
+
+    let about = vec![
+        Paragraph::new("This cli to-do list is powered by Rust.").centered().light_green(),
+        Paragraph::new("
+      @ @@@@ @      
+    @@@@@@@@@@@@    
+  @@@          @@@  
+ @@@@@@@@@@@@@@ @@@ 
+@@@@ @@@    @@@ @@@@
+@@@  @@@@@@@@@   @@@
+@@@  @@@   @@@@ @@@@
+ @@@@@@@@@  @@@@@@@ 
+  @@@@@      @@@@@  
+    @@@@@@@@@@@@    
+      @ @@@@ @      
+        ").centered().light_green().bold(),
+        Paragraph::new("Made by Ammar Elmesaly").centered().light_green(),
+        Paragraph::new("Github link: https://www.github.com/ammar-elmesaly").centered().light_green()
+    ];
+
+    frame.render_widget(&about[0], center_vertical(area[0],1));
+    frame.render_widget(&about[1], area[1]);
+    frame.render_widget(&about[2], center_vertical(area[2],1));
+    frame.render_widget(&about[3], area[3]);
+}
+
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::vertical([
             Constraint::Percentage((100 - percent_y) / 2),
@@ -213,6 +257,13 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
         .split(vertical_chunk);
 
     horizontal_layout[1]
+}
+
+fn center_vertical(area: Rect, height: u16) -> Rect {
+    let [area] = Layout::vertical([Constraint::Length(height)])
+        .flex(Flex::Center)
+        .areas(area);
+    area
 }
 
 fn format_task(index: usize, task: &Task) -> String {

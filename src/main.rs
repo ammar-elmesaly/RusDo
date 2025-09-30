@@ -3,6 +3,7 @@ mod ui;
 mod menu;
 mod task;
 mod view_tasks;
+mod about;
 
 use std::process;
 use ratatui;
@@ -24,13 +25,7 @@ fn handle_events(menu: &mut Menu) -> std::io::Result<MenuAction> {
             KeyCode::Down => {
                 menu.move_next();
             }
-            KeyCode::Enter => {
-                match menu.current_action() {
-                    MenuAction::ViewTasks => return Ok(MenuAction::ViewTasks),
-                    MenuAction::Exit => return Ok(MenuAction::Exit),
-                    _ => {}
-                }
-            }
+            KeyCode::Enter => return Ok(menu.current_action()),
             KeyCode::Char('q') | KeyCode::Esc => return Ok(MenuAction::Exit),
             // handle other key events
             _ => {}
@@ -54,9 +49,10 @@ pub fn run(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn Error>
         terminal.draw(|frame| draw_menu(frame, &menu))?;
 
         // For each action, we run a sub-run function, when that sub-run function returns, it returns here.
-        match handle_events(&mut menu) {
-            Ok(MenuAction::Exit) => { break Ok(()) }
-            Ok(MenuAction::ViewTasks) => { view_tasks::run_loop(terminal, &conn)?; }
+        match handle_events(&mut menu)? {
+            MenuAction::Exit => break Ok(()),
+            MenuAction::ViewTasks => view_tasks::run_loop(terminal, &conn)?,
+            MenuAction::About => about::run_loop(terminal)?,
             _ => { }
         };
     }
