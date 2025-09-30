@@ -60,7 +60,7 @@ pub fn draw_view(frame: &mut Frame, task_list: &TaskList) {
     }).collect();
 
     let block_style = Block::new()
-    .padding(Padding::new(frame.area().width / 5, 1, 1, 1)); 
+    .padding(Padding::new(frame.area().width / 5, 1, 1, 2)); 
 
     let list: List = List::new(items).block(block_style)
     .light_blue()
@@ -96,7 +96,7 @@ pub fn draw_view_task(frame: &mut Frame, task: &Task, selected: usize) {
     ]).split(area);   // Split area up
 
 
-    let task_title = Paragraph::new(task.title.to_string()).centered().block(title_block_style).style(Style::default().bold());
+    let task_title = Paragraph::new(task.title.to_string()).centered().block(title_block_style).bold();
     
     frame.render_widget(task_title, area[0]);  // Render task title
 
@@ -109,13 +109,13 @@ pub fn draw_view_task(frame: &mut Frame, task: &Task, selected: usize) {
         frame.render_widget(task_desc, area[1]);  // Render task description (if it exists)
     }
 
-    let confirm_delete_message = Line::from("Mark this task as done?").centered().style(Style::default().bold());
-    frame.render_widget(confirm_delete_message, area[2]);
+    let confirm_check_message = Line::from("Mark this task as done?").centered().style(Style::default().bold());
+    frame.render_widget(confirm_check_message, area[2]);
 
     let button_areas = Layout::horizontal([
-        Constraint::Percentage(33),
-        Constraint::Percentage(33),
-        Constraint::Percentage(33)
+        Constraint::Percentage(40),
+        Constraint::Percentage(20),
+        Constraint::Percentage(40)
     ]).split(area[3]);
 
 
@@ -137,6 +137,60 @@ pub fn draw_view_task(frame: &mut Frame, task: &Task, selected: usize) {
 
     frame.render_widget(yes, button_areas[0]);
     frame.render_widget(no,  button_areas[2]);
+
+}
+
+pub fn draw_delete_task(frame: &mut Frame, task: &Task, selected: usize) {
+    let area = centered_rect(60, 40, frame.area());
+    let outer_block = Block::bordered()
+        .title("Delete Task")
+        .title_alignment(Alignment::Center)
+        .red();
+
+    // Renders large border with a title
+    frame.render_widget(outer_block, area);
+
+    // block styles
+    let title_block_style = Block::default().padding(Padding::top(3));
+    
+    let area = Layout::vertical([
+        Constraint::Percentage(60),
+        Constraint::Percentage(40)
+    ]).split(area);   // Split area up
+
+    let confirm_delete_message = Paragraph::new(format!("Are you sure to delete this task ({})?", task.title.to_string()))
+    .centered()
+    .block(title_block_style)
+    .bold();
+    
+    frame.render_widget(confirm_delete_message, area[0]);  // Render task title
+
+        let button_areas = Layout::horizontal([
+        Constraint::Percentage(40),
+        Constraint::Percentage(20),
+        Constraint::Percentage(40)
+    ]).split(area[1]);
+
+
+    // Buttons with highlight based on `selected`
+    let yes_style = if selected == 0 {
+        Style::default().bg(Color::LightRed).fg(Color::White).bold()
+    } else {
+        Style::default()
+    };
+
+    let no_style = if selected == 1 {
+        Style::default().bg(Color::LightRed).fg(Color::White).bold()
+    } else {
+        Style::default()
+    };
+
+    let yes = Paragraph::new(Span::styled("[ Yes ]", yes_style)).right_aligned();
+    let no  = Paragraph::new(Span::styled("[ No ]",  no_style)).left_aligned();
+
+    frame.render_widget(yes, button_areas[0]);
+    frame.render_widget(no,  button_areas[2]);
+
 
 }
 

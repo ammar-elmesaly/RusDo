@@ -53,6 +53,13 @@ impl Task {
         Ok(())
     }
 
+    pub fn delete_current_task(conn: &Connection, task_list: &mut TaskList) -> Result<()> {
+        let current_task = &task_list.tasks[task_list.selected];
+        conn.execute("DELETE FROM task WHERE id = ?1", [current_task.id])?;
+        *task_list = Task::all(conn, task_list.selected)?;
+        Ok(())
+    }
+
     pub fn all(conn: &Connection, old_selected: usize) -> Result<TaskList> {
         let mut stmt = conn.prepare("SELECT id, title, desc, completed FROM task")?;
         let iter = stmt.query_map([], |row| {
