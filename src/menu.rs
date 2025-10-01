@@ -1,3 +1,10 @@
+use std::error::Error;
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+
+use crate::ui::draw_menu;
+
+use crate::task::Task;
+
 #[repr(usize)]
 pub enum MenuAction {  
     ViewTasks = 0,
@@ -65,5 +72,51 @@ impl Menu {
 
     pub fn current_action(&self) -> MenuAction {  // Current selected action (view tasks, add, .. etc)
         MenuAction::try_from(self.selected).unwrap()
+    }
+}
+
+fn handle_events(menu: &mut Menu) -> std::io::Result<MenuAction> {
+    match event::read()? {
+        Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
+            KeyCode::Up => {
+                menu.move_prev();
+            }
+            KeyCode::Down => {
+                menu.move_next();
+            }
+            KeyCode::Enter => return Ok(menu.current_action()),
+            KeyCode::Char('q') | KeyCode::Esc => return Ok(MenuAction::Exit),
+            // handle other key events
+            _ => {}
+        },
+        // handle other events
+        _ => {}
+    }
+    Ok(MenuAction::None)
+}
+
+pub fn run_loop(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn Error>> {
+    let conn = crate::db::init_db()?;
+
+    if let Ok(false) = Task::table_exists(&conn) {
+        Task::create_table(&conn)?;
+    }
+
+    let mut menu = Menu::init();
+    let mut show_message = false;
+
+    let mut task_list = Task::all(&conn, 0)?;
+
+    loop {
+        terminal.draw(|frame| draw_menu(frame, &menu, show_message))?;
+
+        // For each action, we run a sub-run function, when that sub-run function returns, it returns here.
+        match handle_events(&mut menu)? {
+            MenuAction::Exit => break Ok(()),
+            MenuAction::ViewTasks => show_message = crate::view_tasks::run_loop(terminal, &conn, &mut task_list)?,
+            MenuAction::AddTask => { crate::add_task::run_loop(terminal, &conn, &mut task_list)?; show_message = false},
+            MenuAction::About => { crate::about::run_loop(terminal)?; show_message = false },
+            _ => { }
+        };
     }
 }
