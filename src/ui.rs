@@ -5,8 +5,8 @@ use ratatui::{
     widgets::{Block, List, ListItem, ListState, Padding, Paragraph, Wrap},
     Frame
 };
-use crate::menu::Menu;
-use crate::{add_task::SelectedInput, task::{Task, TaskList}};
+use crate::menu::{add_task::SelectedInput, Menu};
+use crate::task::{Task, TaskList};
 
 pub fn draw_menu(frame: &mut Frame, menu: &Menu, show_message: bool) {
 

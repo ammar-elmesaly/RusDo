@@ -1,3 +1,7 @@
+pub mod view_tasks;
+pub mod about;
+pub mod add_task;
+
 use std::error::Error;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
@@ -113,9 +117,9 @@ pub fn run_loop(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn E
         // For each action, we run a sub-run function, when that sub-run function returns, it returns here.
         match handle_events(&mut menu)? {
             MenuAction::Exit => break Ok(()),
-            MenuAction::ViewTasks => show_message = crate::view_tasks::run_loop(terminal, &conn, &mut task_list)?,
-            MenuAction::AddTask => { crate::add_task::run_loop(terminal, &conn, &mut task_list)?; show_message = false},
-            MenuAction::About => { crate::about::run_loop(terminal)?; show_message = false },
+            MenuAction::ViewTasks => show_message = view_tasks::run_loop(terminal, &conn, &mut task_list)?,
+            MenuAction::AddTask => { add_task::run_loop(terminal, &conn, &mut task_list)?; show_message = false},
+            MenuAction::About => { about::run_loop(terminal)?; show_message = false },
             _ => { }
         };
     }

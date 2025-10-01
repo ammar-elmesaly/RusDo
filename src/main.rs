@@ -2,9 +2,6 @@ mod db;
 mod ui;
 mod menu;
 mod task;
-mod view_tasks;
-mod about;
-mod add_task;
 
 use std::process;
 use ratatui;
