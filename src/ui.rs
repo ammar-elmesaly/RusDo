@@ -261,7 +261,7 @@ pub fn draw_about(frame: &mut Frame) {
     @@@@@@@@@@@@    
       @ @@@@ @      
         ").centered().light_green().bold(),
-        Paragraph::new("Made by Ammar Elmesaly (release 0.1.0)").centered().light_green(),
+        Paragraph::new("Made by Ammar Elmesaly (release 0.1.1)").centered().light_green(),
         Paragraph::new("Github link: https://www.github.com/ammar-elmesaly").centered().light_green()
     ];
 
