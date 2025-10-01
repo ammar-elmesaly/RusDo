@@ -10,7 +10,6 @@ pub struct Task {
 }
 
 impl Task {
-
     pub fn table_exists(conn: &Connection) -> Result<bool> {
         conn.table_exists(None, "task")
     }
@@ -29,10 +28,10 @@ impl Task {
         Ok(())
     }
 
-    pub fn insert(conn: &Connection, task: &Task, task_list: &mut TaskList) -> Result<()> {
+    pub fn insert(conn: &Connection, title: &str, desc: &str, task_list: &mut TaskList) -> Result<()> {
         conn.execute(
-            "INSERT INTO task (title, desc, completed) VALUES (?1, ?2, ?3)",
-            (&task.title, &task.desc, &task.completed),
+            "INSERT INTO task (title, desc) VALUES (?1, ?2)",
+            (title, desc),
         )?;
         *task_list = Task::all(conn, task_list.selected)?;
 

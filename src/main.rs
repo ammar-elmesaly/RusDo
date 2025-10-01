@@ -4,6 +4,7 @@ mod menu;
 mod task;
 mod view_tasks;
 mod about;
+mod add_task;
 
 use std::process;
 use ratatui;
@@ -46,13 +47,16 @@ pub fn run(terminal: &mut ratatui::DefaultTerminal) -> Result<(), Box<dyn Error>
     let mut menu = Menu::init();
     let mut show_message = false;
 
+    let mut task_list = Task::all(&conn, 0)?;
+
     loop {
         terminal.draw(|frame| draw_menu(frame, &menu, show_message))?;
 
         // For each action, we run a sub-run function, when that sub-run function returns, it returns here.
         match handle_events(&mut menu)? {
             MenuAction::Exit => break Ok(()),
-            MenuAction::ViewTasks => show_message = view_tasks::run_loop(terminal, &conn)?,
+            MenuAction::ViewTasks => show_message = view_tasks::run_loop(terminal, &conn, &mut task_list)?,
+            MenuAction::AddTask => { add_task::run_loop(terminal, &conn, &mut task_list)?; show_message = false},
             MenuAction::About => { about::run_loop(terminal)?; show_message = false },
             _ => { }
         };

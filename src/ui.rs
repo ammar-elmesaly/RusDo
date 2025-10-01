@@ -1,12 +1,16 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Flex, Layout, Rect}, style::{Color, Style, Stylize}, text::{Line, Span}, widgets::{Block, List, ListItem, ListState, Padding, Paragraph, Wrap}, Frame
+    layout::{Alignment, Constraint, Direction, Flex, Layout, Rect},
+    style::{Color, Style, Stylize},
+    text::{Line, Span},
+    widgets::{Block, List, ListItem, ListState, Padding, Paragraph, Wrap},
+    Frame
 };
 use super::Menu;
-use crate::task::{Task, TaskList};
+use crate::{add_task::SelectedInput, task::{Task, TaskList}};
 
 pub fn draw_menu(frame: &mut Frame, menu: &Menu, show_message: bool) {
 
-    let outer_area = centered_rect(60, 100, frame.area());
+    let outer_area = centered_rect(60, 50, frame.area());
 
     let outer_block = Block::bordered()
         .title("Welcome to RusDo!")
@@ -42,6 +46,7 @@ pub fn draw_menu(frame: &mut Frame, menu: &Menu, show_message: bool) {
     let message = Paragraph::new("There is no available tasks, consider adding some!")
     .centered()
     .blue()
+    .bold()
     .wrap(Wrap { trim: true })
     .block(Block::bordered());
 
@@ -256,7 +261,7 @@ pub fn draw_about(frame: &mut Frame) {
     @@@@@@@@@@@@    
       @ @@@@ @      
         ").centered().light_green().bold(),
-        Paragraph::new("Made by Ammar Elmesaly").centered().light_green(),
+        Paragraph::new("Made by Ammar Elmesaly (release 0.1.0)").centered().light_green(),
         Paragraph::new("Github link: https://www.github.com/ammar-elmesaly").centered().light_green()
     ];
 
@@ -264,6 +269,51 @@ pub fn draw_about(frame: &mut Frame) {
     frame.render_widget(&about[1], area[1]);
     frame.render_widget(&about[2], center_vertical(area[2],1));
     frame.render_widget(&about[3], area[3]);
+}
+
+pub fn draw_add_task(frame: &mut Frame, title_text: &str, desc_text: &str, selected_input: &SelectedInput) {
+    let outer_area = centered_rect(60, 50, frame.area());
+
+    let outer_block = Block::bordered()
+        .title("Add a task")
+        .title_alignment(Alignment::Center)
+        .yellow();
+
+    // Renders large border with a title
+    frame.render_widget(outer_block, outer_area);
+
+    let area = Layout::vertical([
+        Constraint::Percentage(25),
+        Constraint::Percentage(75)
+    ])
+    .split(outer_area);
+
+    let title_style;
+    let desc_style;
+
+    match selected_input {
+        SelectedInput::Title => {
+            title_style = Color::LightYellow.into();
+            desc_style = Style::default();
+        }
+        SelectedInput::Desc => {
+            title_style = Style::default();
+            desc_style = Color::LightYellow.into();
+        } 
+    };
+
+    let task_title = Paragraph::new(title_text)
+        .block(Block::bordered().title("Task Title"))
+        .style(title_style);
+
+    let task_desc = Paragraph::new(desc_text)
+        .block(Block::bordered().title("Task Description"))
+        .style(desc_style)
+        .wrap(Wrap { trim: true });
+
+    frame.render_widget(task_title, area[0]);
+    frame.render_widget(task_desc, area[1]);
+    
 }
 
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {

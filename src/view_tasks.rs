@@ -3,7 +3,7 @@ use std::error::Error;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use rusqlite::Connection;
 
-use crate::{task::Task, ui::{draw_view, draw_view_task, draw_delete_task}};
+use crate::{task::{Task, TaskList}, ui::{draw_delete_task, draw_view, draw_view_task}};
 
 pub enum Action {
     Exit,
@@ -79,9 +79,7 @@ fn handle_delete_task_events(confirm_selection: &mut usize) -> Result<Action, Bo
 
 // It returns a Result bool, which is a show message bool, if we want it to return multiple states,
 // then it's probably more suitable to use an enum
-pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> Result<bool, Box<dyn Error>>  {
-    let mut task_list = Task::all(conn, 0)?;
-    
+pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection, task_list: &mut TaskList) -> Result<bool, Box<dyn Error>>  {
     if task_list.tasks.len() == 0 {
         return Ok(true);
     }
@@ -95,8 +93,8 @@ pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> R
             Action::ViewTask => {
                 let task = task_list.current_task();
                 match view_task_loop(terminal, task)? {
-                    Action::CheckTask => Task::check_current_task(conn, &mut task_list)?,
-                    Action::UncheckTask => Task::uncheck_current_task(conn, &mut task_list)?,
+                    Action::CheckTask => Task::check_current_task(conn, task_list)?,
+                    Action::UncheckTask => Task::uncheck_current_task(conn, task_list)?,
                     _ => {}
                 }
             }
@@ -104,7 +102,7 @@ pub fn run_loop(terminal: &mut ratatui::DefaultTerminal, conn: &Connection) -> R
                 let task = task_list.current_task();
 
                 match delete_task_loop(terminal, task)? {
-                    Action::DeleteTask => Task::delete_current_task(conn, &mut task_list)?,
+                    Action::DeleteTask => Task::delete_current_task(conn, task_list)?,
                     _ => {}
                 };
                 
