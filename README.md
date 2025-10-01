@@ -26,5 +26,5 @@ Available on [crates.io](https://crates.io/crates/rusdo)
 
 [Latest Version]: https://img.shields.io/crates/v/rusdo.svg
 [crates.io]: https://crates.io/crates/rusdo
-[!License]: https://img.shields.io/crates/l/rusdo.svg
+[License]: https://img.shields.io/crates/l/rusdo.svg
 [license]: https://github.com/ammar-elmesaly/rusdo/blob/main/LICENSE
