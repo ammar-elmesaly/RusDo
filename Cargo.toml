@@ -1,5 +1,9 @@
 [package]
 name = "rusdo"
+description = "A minimalist to-do list app, still under construction."
+authors = ["Ammar Elmesaly"]
+license = "MIT"
+keywords = ["CLI", "Productivity"]
 version = "0.1.0"
 edition = "2024"
 
