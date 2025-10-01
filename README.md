@@ -1,6 +1,6 @@
 # RusDo - A minimalist to-do list CLI tool
 
-[![Latest Version]][crates.io] ![License]
+[![Latest Version]][crates.io] [![License]][license]
 
 This is my very first Rust project. I was messing around with the language recently and decided to enhance my Rust skills—and more broadly, my programming skills—by building a project in this memory-safe, low-level language.
 
@@ -23,3 +23,8 @@ Each window in the project (view tasks, delete a task, about, etc.) has its own 
 This project would probably have been much simpler to implement in a language like Python (since it isn’t performance-critical), but it serves as a practice project, and I’ve learned a lot from it.
 
 Available on [crates.io](https://crates.io/crates/rusdo)
+
+[Latest Version]: https://img.shields.io/crates/v/rusdo.svg
+[crates.io]: https://crates.io/crates/rusdo
+[!License]: https://img.shields.io/crates/l/rusdo.svg
+[license]: https://github.com/ammar-elmesaly/rusdo/blob/main/LICENSE
