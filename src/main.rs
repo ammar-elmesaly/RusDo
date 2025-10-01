@@ -8,13 +8,12 @@ mod add_task;
 
 use std::process;
 use ratatui;
-use menu::run_loop;
 
 
 fn main() {
     let mut terminal = ratatui::init();
     
-    run_loop(&mut terminal).unwrap_or_else(|err| {
+    menu::run_loop(&mut terminal).unwrap_or_else(|err| {
         eprintln!("{err}");
         process::exit(-1);
     });
