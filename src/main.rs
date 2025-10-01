@@ -8,7 +8,7 @@ mod add_task;
 
 use std::process;
 use ratatui;
-use menu::{Menu, run_loop};
+use menu::run_loop;
 
 
 fn main() {
